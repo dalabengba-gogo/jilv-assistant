@@ -1,0 +1,25 @@
+# goto 自动导航真机验证:
+# 主界面 → goto[玩法面板](引擎自动点[玩法]) → 页签切换 → 面板返回 → 验证回主界面
+name: goto导航验证
+description: 验证 opens + goto:{ui:X} 自动路径推导
+settings:
+  default_timeout: 20
+  default_retry: 1
+steps:
+  - name: 确认在主界面
+    wait: {ui: 主界面}
+
+  - name: 自动导航到玩法面板
+    goto: {ui: 玩法面板}
+
+  - name: 切到周常页签
+    click: {button: 周常页签}
+
+  - name: 切回日常页签
+    click: {button: 日常页签}
+
+  - name: 关闭面板
+    click: {button: 面板返回}
+
+  - name: 验证回到主界面
+    verify: {ui: 主界面}

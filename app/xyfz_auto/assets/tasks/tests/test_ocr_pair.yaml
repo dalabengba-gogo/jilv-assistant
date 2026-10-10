@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+# ocr_pair 完成判定冒烟测试 (2026-09-11)
+# 前置: 师门任务今日已完成(面板卡片带"已完成"徽标) → 守卫应命中并关面板回主界面
+name: ocr_pair完成判定测试
+description: 开玩法面板→日常页签→师门徽标配对守卫→关面板→主界面
+
+settings:
+  default_timeout: 10
+  default_retry: 2
+
+steps:
+  - name: 确认主界面
+    wait: {ui: 主界面}
+    timeout: 15
+    retry: 3
+
+  - name: 打开玩法面板
+    click: [506, 539]
+
+  - name: 等玩法面板出现
+    wait: {ui: 玩法面板}
+    timeout: 10
+    retry: 3
+
+  - name: 点日常页签
+    click: [95, 934]
+    on_fail: continue
+
+  - name: 停顿1秒
+    sleep: 1
+
+  - name: 守卫-师门若已完成则命中
+    wait: {ocr_pair: [已完成, 师门任务]}
+    timeout: 5
+    retry: 0
+    on_success: {goto: "关面板"}
+    on_fail: continue
+
+  # 命中不了会走到这里 —— 标记失败路径
+  - name: 失败-守卫未命中
+    sleep: 1
+
+  - name: 失败-标记
+    click: [270, 500]
+
+  - name: 关面板
+    click: [22, 916]
+    on_fail: continue
+
+  - name: 停顿1秒
+    sleep: 1
+
+  - name: 等回主界面
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 2

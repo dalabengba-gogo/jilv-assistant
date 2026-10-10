@@ -1,0 +1,68 @@
+name: 登录并开启纯享模式
+description: >
+  完整流程: 启动游戏 → 登录 → 等进主界面 → 点右下角菜单 → 点"纯"
+  → 点"开启纯享" → 点叉号关闭。若游戏已登录(无登录按钮)自动跳过登录步骤。
+settings:
+  default_timeout: 30
+  default_retry: 2
+steps:
+  - name: 启动游戏
+    action:
+      type: start_app
+      package: com.netease.xyfz_02
+    on_fail: stop
+
+  - name: 等待登录按钮并点击(已登录则跳过)
+    wait:
+      template: login_btn
+    timeout: 15
+    retry: 0
+    action:
+      type: click_center
+    on_fail: continue
+
+  - name: 等待进入主界面
+    wait:
+      template: main_ui_menu_role
+    timeout: 90
+    retry: 0
+    on_fail: stop
+
+  - name: 打开右下角菜单
+    wait:
+      template: main_btn_menu
+    action:
+      type: click_center
+
+  - name: 点击"纯"按钮
+    wait:
+      template: menu_btn_chun
+    timeout: 15
+    action:
+      type: click_center
+    on_fail: stop
+
+  - name: 等待纯享面板出现
+    wait:
+      template: chun_btn_open
+    timeout: 15
+    on_fail: stop
+
+  - name: 点击"开启纯享"
+    action:
+      type: click
+      at: [142, 565]
+
+  - name: 点击右上角叉号关闭
+    wait:
+      template: chun_btn_close_x
+    timeout: 10
+    action:
+      type: click_center
+    on_fail: continue
+
+  - name: 验证面板已关闭
+    wait:
+      not:
+        template: chun_btn_close_x
+    timeout: 10

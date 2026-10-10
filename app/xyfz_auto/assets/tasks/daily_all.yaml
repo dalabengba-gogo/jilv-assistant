@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+# ============================================================
+# 日常全家桶(一条龙总调度) —— 按顺序串起 6 个子脚本
+# ------------------------------------------------------------
+# 顺序:
+#   ⓪ 开启纯享模式(daily_pure_mode) —— 启动前置,隐藏其他玩家模型/称谓,
+#       画面干净减少模板/OCR 误判(幂等,已开启再点无副作用)
+#   ① 领取离线奖励(daily_claim)    —— 队友完成的玩法直接领宝箱,无可领自动跳过
+#   ② 组队一条(daily_team_oneloop) —— 固定队创建+邀请,自动跑抓鬼/挖宝/烧法等
+#   ③ 地煞星×3(daily_dixia_3x)     —— 10星地藏星挑战3次(已有队伍自动跳过组队)
+#   ④ 师门任务(daily_shimen)       —— 单人,玩法面板OCR进,全自动5环
+#   ⑤ 五环任务(daily_wuhuan)       —— 单人,玩法面板OCR进,全自动
+#   ⑥ 域外风情(daily_yuwai)        —— 每日额外50次,连打+循环清理结算弹窗
+#
+# 说明:
+#   - 2026-09-11: 单独运行的子脚本已移入 assets/tasks/parts/(仍由本文件 include),
+#     目的是让 GUI 任务下拉框里只显示这唯一的日常总脚本; tests/ 放回归用例
+#   - 2026-10-10: 各玩法已另拆出独立顶层脚本, 可单独选中运行(均自带纯享模式前置,
+#     与本总脚本共用同一份 parts/ 子脚本, 无内容复制):
+#       tasks/组队一条.yaml     —— 纯享 + 组队一条
+#       tasks/五环+师门.yaml    —— 纯享 + 五环 + 师门(本总脚本里是师门→五环)
+#       tasks/地煞星.yaml       —— 纯享 + 地煞星×3
+#       tasks/域外风情.yaml     —— 纯享 + 域外风情额外50次
+#   - include 语法把子任务步骤内联展开(递归,支持嵌套)
+#   - 子脚本均以"确认主界面"开头、"等回主界面"收尾,衔接安全
+#   - 玩法面板卡片位置会随完成状态变动,师门/五环用 OCR 定位不受影响
+#   - 每天子任务自身带容错(组队/介绍页分支/结算点掉),可单独运行
+# ============================================================
+name: 日常全家桶(纯享+组队一条+地煞+师门+五环+域外)
+description: 先开纯享模式,再按顺序把五个日常一条龙跑完,适合每天上线一键执行
+
+settings:
+  default_timeout: 30
+  default_retry: 2
+
+steps:
+  - name: "⓪开启纯享模式"
+    include: parts/daily_pure_mode.yaml
+
+  - name: "①领取离线奖励"
+    include: parts/daily_claim.yaml
+
+  - name: "②组队一条"
+    include: parts/daily_team_oneloop.yaml
+
+  - name: "③地煞星×3"
+    include: parts/daily_dixia_3x.yaml
+
+  - name: "④师门任务"
+    include: parts/daily_shimen.yaml
+
+  - name: "⑤五环任务"
+    include: parts/daily_wuhuan.yaml
+
+  - name: "⑥域外风情额外50次"
+    include: parts/daily_yuwai.yaml

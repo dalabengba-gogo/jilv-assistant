@@ -1,0 +1,24 @@
+# ---- 体积大 / 非源码 ----
+# 337MB 运行时(Python 3.13 + 依赖), 不入库, 换机器时从绿色版拷贝
+vendor/
+# 打包产物
+dist/
+# 临时移出的旧打包产物(删不掉时兜底备份, 不入库)
+_dist_obsolete/
+
+# ---- 运行期产物 ----
+__pycache__/
+*.py[cod]
+logs/
+_collect/
+shots/
+*.log
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- IDE 工作数据 ----
+.workbuddy/

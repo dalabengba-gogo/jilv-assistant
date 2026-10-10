@@ -1,0 +1,37 @@
+[
+  {
+    "enabled": false,
+    "name": "账号1",
+    "port": 16384,
+    "task": "五环+师门.yaml",
+    "delay_min": 0
+  },
+  {
+    "enabled": true,
+    "name": "账号2",
+    "port": 16416,
+    "task": "五环+师门.yaml",
+    "delay_min": 0
+  },
+  {
+    "enabled": true,
+    "name": "账号3",
+    "port": 16448,
+    "task": "五环+师门.yaml",
+    "delay_min": 0
+  },
+  {
+    "enabled": true,
+    "name": "账号4",
+    "port": 16480,
+    "task": "五环+师门.yaml",
+    "delay_min": 0
+  },
+  {
+    "enabled": true,
+    "name": "账号5",
+    "port": 16512,
+    "task": "五环+师门.yaml",
+    "delay_min": 0
+  }
+]

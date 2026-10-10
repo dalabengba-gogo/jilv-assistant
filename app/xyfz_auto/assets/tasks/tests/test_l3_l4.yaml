@@ -1,0 +1,50 @@
+# 三级/四级导航端到端验证
+# 链1: 主界面 → 角色 → 技能页(三级) → 返回
+# 链2: 主界面 → 角色 → 作坊页(三级) → 打造页(四级) → 返回x2
+# 链3: 主界面 → 菜单 → 商城页(三级) → 返回x2
+name: 三四级导航端到端验证
+settings:
+  default_timeout: 20
+  default_retry: 1
+steps:
+  - name: 确认主界面
+    wait: {ui: 主界面}
+
+  - name: 导航到技能页
+    goto: {ui: 技能页}
+
+  - name: 回角色面板
+    click: {button: 面板返回}
+
+  - name: 回主界面
+    click: {button: 面板返回}
+    verify: {ui: 主界面}
+
+  - name: 导航到打造页(四级)
+    goto: {ui: 打造页}
+
+  - name: 切重铸子页签
+    click: {button: 重铸子页签}
+
+  - name: 切回打造子页签
+    click: {button: 打造子页签}
+
+  - name: 打造页返回作坊
+    click: {button: 面板返回}
+
+  - name: 作坊返回主界面
+    click: {button: 面板返回}
+    verify: {ui: 主界面}
+
+  - name: 导航到商城页
+    goto: {ui: 商城页}
+
+  - name: 切仙玉礼包页签
+    click: {button: 仙玉礼包页签}
+
+  - name: 商城返回主菜单
+    click: {button: 面板返回}
+
+  - name: 主菜单返回主界面
+    click: {button: 面板返回}
+    verify: {ui: 主界面}

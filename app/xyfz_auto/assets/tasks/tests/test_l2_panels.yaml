@@ -1,0 +1,27 @@
+name: 二级面板导航验证
+description: 验证二级面板入库：玩法面板页签切换 -> 角色面板页签切换 -> 全部关闭回主界面
+settings:
+  default_timeout: 15
+  default_retry: 1
+steps:
+  - name: 确认在主界面
+    wait: {ui: 主界面}
+  - name: 打开玩法面板
+    click: {button: 玩法}
+    verify: {ui: 玩法面板}
+  - name: 切到周常页签
+    click: {button: 周常页签}
+  - name: 切回日常页签
+    click: {button: 日常页签}
+  - name: 关闭玩法面板
+    click: {button: 面板返回}
+  - name: 打开角色面板
+    click: {button: 角色}
+    verify: {ui: 角色面板}
+  - name: 切到技能页签
+    click: {button: 技能页签}
+  - name: 切回属性页签
+    click: {button: 属性页签}
+  - name: 关闭角色面板
+    click: {button: 面板返回}
+    verify: {ui: 主界面}

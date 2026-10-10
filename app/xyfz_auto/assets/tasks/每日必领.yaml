@@ -1,0 +1,540 @@
+# -*- coding: utf-8 -*-
+# ============================================================
+# 每日必领 —— 五类免费礼包/福利按顺序领取 (2026-10-09 新建, 同日多次修复)
+# ------------------------------------------------------------
+# 顺序: ①商城每日免费礼包(商城-每日礼包页"免费"按钮)
+#       ②魔王窟礼包(玩法面板-周常页签右下浮动按钮→弹窗"领取")
+#       ③秘境寻踪扫荡奖励(玩法面板-挑战页签进秘境寻踪页→右上宝箱→弹窗"一键扫荡")
+#       ④画里乾坤扫荡(玩法面板-挑战页签卡片左侧"扫荡"按钮)
+#       ⑤盈福大厅签到(菜单→盈福大厅→每日签到卡片→签到福利弹窗"签到")
+#       ⑥帮派捐献(主界面右下"帮派"→帮派页→底部"聚义厅"页签→"捐献"/"材料捐献")
+#
+# 防御性设计:
+#   - 所有按钮用 mode:locate 模板实时定位 —— 已领取/按钮消失 → 该段自动跳过
+#     (2026-10-09 实证: 已领后 商城"免费"变灰"售罄"、魔王窟弹窗"领取"变"购买",
+#      模板自然失配即正确跳过)
+#   - 主界面左列按钮叠在地图场景上, 位置随顶部活动横幅浮动 → 商城用 click:{ocr:商城}
+#   - 弹窗等待一律用模板不用 OCR: 「一键扫荡」美术字 OCR 只读出"键扫荡"
+#     (「一」融入按钮边框), 2026-10-09 实跑事故 → wait:{template:...}
+#   - 领取后可能有奖励弹窗, 跟 {ocr:确定}/{ocr:确认} retry:0 尽力关
+#   - 每段收尾=线性逐层关: (点返回locate→等主界面)×3~4 —— 弹窗/页面/面板
+#     每层一次返回, 不用 goto 补点(此前 ③ 返回只关了弹窗, 页面残留导致 ④ 连锁失败)
+#   - 段与段之间假定回主界面, 从主界面重新导航
+#
+# 已实证(2026-10-09): 各按钮坐标/模板、魔王窟礼包弹窗、扫荡奖励弹窗(一键扫荡)、
+#   签到福利弹窗(签到→原地变"已领取", 无额外奖励弹窗)
+# ============================================================
+name: 每日必领
+description: 按顺序领取 商城每日免费礼包→魔王窟礼包→秘境寻踪扫荡奖励→画里乾坤扫荡→盈福大厅签到→帮派捐献, 已领或不可领自动跳过
+
+settings:
+  default_timeout: 10
+  default_retry: 2
+
+steps:
+  # ================= 段① 商城每日免费礼包 =================
+  - name: 每日必领-确认主界面
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 3
+    on_fail: continue
+
+  # 左列按钮叠在地图上且随活动横幅浮动, 固定坐标会点歪让角色走动 → OCR 定位
+  - name: 每日必领-①打开商城
+    click: {ocr: 商城}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①等商城页
+    wait: {ui: 商城页}
+    timeout: 10
+    retry: 1
+    on_fail: {goto: 每日必领-①补点商城}
+
+  # 成功路径必须 jump, 否则顺序流会滑进补点块重复点击
+  - name: 每日必领-①商城已开跳板
+    jump: 每日必领-①点每日免费礼包
+
+  # OCR 没找到"商城"文字(被遮挡/布局异常) → 模板定位补点一次
+  - name: 每日必领-①补点商城
+    click: {button: 商城, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①补点等商城页
+    wait: {ui: 商城页}
+    timeout: 10
+    retry: 1
+    on_fail: {goto: 每日必领-①收尾}
+
+  - name: 每日必领-①点每日免费礼包
+    click: {button: 每日免费礼包, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-①切每日礼包子页}
+
+  - name: 每日必领-①领到跳板
+    jump: 每日必领-①收尾
+
+  # 商城默认页签可能不是"每日礼包"(记住上次页签), 先切子页再找
+  - name: 每日必领-①切每日礼包子页
+    click: [215, 825]
+
+  - name: 每日必领-①切页后再点免费
+    click: {button: 每日免费礼包, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-①收尾}   # 找不到=已领取(售罄)或页面异常, 跳过
+
+  # ---------- 段①收尾: 逐层关(奖励弹窗→商城页) ----------
+  - name: 每日必领-①收尾
+    sleep: 2
+
+  - name: 每日必领-①关奖励弹窗
+    click: {ocr: 确定}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①返回1
+    click: {button: 商城返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①等主界面1
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①返回2
+    click: {button: 商城返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①等主界面2
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①返回3
+    click: {button: 商城返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-①等主界面3
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 1
+    on_fail: continue
+
+  # ================= 段② 魔王窟礼包(周常页签) =================
+  - name: 每日必领-②打开玩法面板
+    click: {button: 玩法}
+
+  - name: 每日必领-②等玩法面板
+    wait: {ui: 玩法面板}
+    timeout: 10
+    retry: 1
+    on_fail: {goto: 每日必领-②收尾}
+
+  - name: 每日必领-②点周常页签
+    click: {button: 周常页签}
+
+  - name: 每日必领-②点魔王窟礼包
+    click: {button: 魔王窟礼包, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-②收尾}   # 浮动按钮消失=无可领, 跳过
+
+  - name: 每日必领-②等礼包弹窗
+    wait: {ui: 魔王窟礼包弹窗}
+    timeout: 8
+    retry: 0
+    on_fail: {goto: 每日必领-②收尾}
+
+  # 已领后按钮变"购买"(2026-10-09 实证), 模板失配 → continue 跳过
+  - name: 每日必领-②点领取
+    click: {button: 魔王窟礼包领取, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②等领取反馈
+    sleep: 2
+
+  - name: 每日必领-②关奖励弹窗
+    click: {ocr: 确定}
+    retry: 0
+    on_fail: continue
+
+  # ---------- 段②收尾: 逐层关(奖励弹窗→礼包弹窗→玩法面板) ----------
+  - name: 每日必领-②收尾
+    click: {button: 魔王窟礼包关闭, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②返回1
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②等主界面1
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②返回2
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②等主界面2
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②返回3
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-②等主界面3
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 1
+    on_fail: continue
+
+  # ================= 段③ 秘境寻踪扫荡奖励(挑战页签) =================
+  - name: 每日必领-③打开玩法面板
+    click: {button: 玩法}
+
+  - name: 每日必领-③等玩法面板
+    wait: {ui: 玩法面板}
+    timeout: 10
+    retry: 1
+    on_fail: {goto: 每日必领-③收尾}
+
+  - name: 每日必领-③点挑战页签
+    click: {button: 挑战页签}
+
+  - name: 每日必领-③点秘境寻踪卡片
+    click: {button: 秘境寻踪入口}
+    retry: 0
+    on_fail: {goto: 每日必领-③收尾}
+
+  - name: 每日必领-③等秘境寻踪页
+    wait: {ui: 秘境寻踪页}
+    timeout: 8
+    retry: 0
+    on_fail: {goto: 每日必领-③收尾}
+
+  - name: 每日必领-③点扫荡奖励
+    click: {button: 秘境寻踪扫荡奖励, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-③收尾}   # 无宝箱/"!"角标消失=无可领
+
+  # 「一键扫荡」美术字 OCR 读成"键扫荡"(「一」融入边框) → 必须用模板等待
+  - name: 每日必领-③等扫荡奖励弹窗
+    wait: {template: mijing_btn_onekey_sweep}
+    timeout: 8
+    retry: 0
+    on_fail: {goto: 每日必领-③收尾}
+
+  - name: 每日必领-③点一键扫荡
+    click: {button: 秘境寻踪一键扫荡, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③等领取反馈
+    sleep: 2
+
+  - name: 每日必领-③关确认弹窗
+    click: {ocr: 确定}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③关确认弹窗2
+    click: {ocr: 确认}
+    retry: 0
+    on_fail: continue
+
+  # ---------- 段③收尾: 逐层关(奖励弹窗→扫荡弹窗→秘境页→玩法面板) ----------
+  - name: 每日必领-③收尾
+    sleep: 1
+
+  - name: 每日必领-③返回1
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③等主界面1
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③返回2
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③等主界面2
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③返回3
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③等主界面3
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③返回4
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-③等主界面4
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 1
+    on_fail: continue
+
+  # ================= 段④ 画里乾坤扫荡(挑战页签) =================
+  - name: 每日必领-④打开玩法面板
+    click: {button: 玩法}
+
+  - name: 每日必领-④等玩法面板
+    wait: {ui: 玩法面板}
+    timeout: 10
+    retry: 1
+    on_fail: {goto: 每日必领-④收尾}
+
+  - name: 每日必领-④点挑战页签
+    click: {button: 挑战页签}
+
+  - name: 每日必领-④点画里乾坤扫荡
+    click: {button: 画里乾坤扫荡, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-④收尾}   # 无扫荡按钮=次数用完/未解锁
+
+  - name: 每日必领-④等反馈
+    sleep: 2
+
+  - name: 每日必领-④关确认弹窗1
+    click: {ocr: 确定}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④等扫荡结算
+    sleep: 3
+
+  - name: 每日必领-④关结算弹窗
+    click: {ocr: 确定}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④关结算弹窗2
+    click: {ocr: 确认}
+    retry: 0
+    on_fail: continue
+
+  # ---------- 段④收尾: 逐层关(结算弹窗→确认弹窗→玩法面板) ----------
+  - name: 每日必领-④收尾
+    sleep: 1
+
+  - name: 每日必领-④返回1
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④等主界面1
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④返回2
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④等主界面2
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④返回3
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-④等主界面3
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 1
+    on_fail: continue
+
+  # ================= 段⑤ 盈福大厅每日签到 =================
+  - name: 每日必领-⑤点菜单
+    click: {button: 菜单}
+
+  - name: 每日必领-⑤等主菜单面板
+    wait: {ui: 主菜单面板}
+    timeout: 8
+    retry: 0
+    on_fail: {goto: 每日必领-⑤收尾}
+
+  - name: 每日必领-⑤点盈福大厅
+    click: {button: 盈福大厅, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-⑤收尾}
+
+  - name: 每日必领-⑤等盈福大厅页
+    wait: {ui: 盈福大厅页}
+    timeout: 8
+    retry: 0
+    on_fail: {goto: 每日必领-⑤收尾}
+
+  - name: 每日必领-⑤点每日签到卡片
+    click: {button: 每日签到卡片, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-⑤收尾}
+
+  - name: 每日必领-⑤等签到福利弹窗
+    wait: {ui: 签到福利弹窗}
+    timeout: 8
+    retry: 0
+    on_fail: {goto: 每日必领-⑤收尾}
+
+  # 已签后按钮变灰绿"已领取"(2026-10-09 实证), 模板失配 → continue 跳过
+  - name: 每日必领-⑤点签到
+    click: {button: 每日签到, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  # 2026-10-09 实测: 签到直接在弹窗内生效(本月签到 3→4, 当日格打勾, 按钮转灰绿
+  # "已领取"), 没有二次确认弹窗 —— 故不再写"点确定"(找不到会白等一次默认超时)
+  - name: 每日必领-⑤等签到反馈
+    sleep: 2
+
+  # ---------- 段⑤收尾: 逐层关(签到弹窗→盈福大厅页→主菜单面板→主界面) ----------
+  # 2026-10-09 实测: X →(1次菜单返回) 主菜单面板 →(1次菜单返回) 主界面, 共需 2 次返回
+  - name: 每日必领-⑤收尾
+    click: {button: 签到弹窗关闭, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑤步进1
+    sleep: 1
+
+  - name: 每日必领-⑤返回1
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑤步进2
+    sleep: 1
+
+  - name: 每日必领-⑤返回2
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑤等主界面
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 2
+    on_fail: continue
+
+  # ================= 段⑥ 帮派捐献 =================
+  # 2026-10-10 新增: 主界面右下"帮派" → 帮派页(默认落在"议政厅") → 底部"聚义厅"页签 → 捐献
+  # 实测(账号1):
+  #   · 帮派页底部导航 议政厅/聚义厅/守护神/驯兽堂; 聚义厅页中部为"捐献奖励"
+  #   · 每日首次是单个"捐献"按钮(上方"本次免费") → 点一次完成一次免费捐献
+  #   · 常规态是并排"材料捐献"/"银两捐献" → 点"材料捐献"
+  #   · 任一捐献都弹"恭喜获得"(提示"点击空白处关闭(8)"); 点顶部标题栏空白处
+  #     [270,25] 约1秒即关(实测无弹窗时点该处也无副作用), 不必干等8秒
+  #   · 帮派页左下返回箭头与"菜单返回"同模板(命中0.991), 点一次直接回主界面
+  - name: 每日必领-⑥点帮派
+    click: {button: 帮派, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑥等帮派页
+    wait: {ui: 帮派页}
+    timeout: 8
+    retry: 1
+    on_fail: {goto: 每日必领-⑥收尾}
+
+  - name: 每日必领-⑥点聚义厅
+    click: {button: 聚义厅页签, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑥等聚义厅页
+    wait: {ui: 帮派聚义厅页}
+    timeout: 8
+    retry: 1
+    on_fail: {goto: 每日必领-⑥收尾}
+
+  # 免费态才有单个"捐献"按钮 → 捐一次免费的; 常规态无此按钮 → 直接跳到点材料捐献
+  - name: 每日必领-⑥点免费捐献
+    click: {button: 帮派捐献, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-⑥点材料捐献}
+
+  # 先等弹窗弹出再点空白关闭(点太早会点空, 弹窗随后才出现会挡住下面的按钮)
+  - name: 每日必领-⑥等免费奖励弹窗
+    sleep: 2
+
+  - name: 每日必领-⑥关免费奖励弹窗
+    click: [270, 25]
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑥步进1
+    sleep: 1
+
+  - name: 每日必领-⑥点材料捐献
+    click: {button: 帮派材料捐献, mode: locate}
+    retry: 0
+    on_fail: {goto: 每日必领-⑥收尾}
+
+  - name: 每日必领-⑥等材料奖励弹窗
+    sleep: 2
+
+  - name: 每日必领-⑥关材料奖励弹窗
+    click: [270, 25]
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑥步进2
+    sleep: 1
+
+  # ---------- 段⑥收尾: 帮派页左下返回箭头(=菜单返回)→主界面 ----------
+  - name: 每日必领-⑥收尾
+    sleep: 1
+
+  - name: 每日必领-⑥返回
+    click: {button: 菜单返回, mode: locate}
+    retry: 0
+    on_fail: continue
+
+  - name: 每日必领-⑥等主界面
+    wait: {ui: 主界面}
+    timeout: 8
+    retry: 1
+    on_fail: continue
+
+  - name: 每日必领-最终确认
+    wait: {ui: 主界面}
+    timeout: 15
+    retry: 2
+    on_fail: continue

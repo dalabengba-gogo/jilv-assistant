@@ -1,0 +1,15 @@
+name: 按钮注册表真机验证
+description: 用中文按钮名驱动的端到端验证：确认主界面 -> 打开四方格菜单 -> 返回键关闭
+settings:
+  default_timeout: 15
+  default_retry: 1
+steps:
+  - name: 确认在主界面
+    wait: {ui: 主界面}
+  - name: 打开四方格菜单
+    click: {button: 四方格}
+  - name: 等菜单弹出
+    sleep: 2
+  - name: 返回键关闭菜单
+    click: {button: 菜单返回}
+    verify: {ui: 主界面}

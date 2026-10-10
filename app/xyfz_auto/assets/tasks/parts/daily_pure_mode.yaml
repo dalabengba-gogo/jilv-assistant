@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+# ============================================================
+# 开启纯享模式 —— 全家桶启动前置步骤 (2026-09-11)
+# ------------------------------------------------------------
+# 目的: 跑日常前先开纯享(隐藏场景内其他玩家模型和称谓显示),
+#       画面干净可减少模板/OCR 误判(玩家名字挡住按钮/卡片等)
+#
+# 流程: 确认主界面 → 清残留浮层 → 右下菜单 → "纯" →
+#       点"开启纯享"(142,565) → 叉号关面板
+#
+# 实测(2026-09-11 真机):
+#   - 纯享面板两个选项是单选按钮, "开启纯享"已选中时再点一次
+#     不会切换成关闭 —— 点击幂等, 所以无需判定当前状态,
+#     每次无条件点一次"开启纯享"即可 (未开→开启, 已开→无变化)
+#   - 面板勾选标记在两种状态下看起来一样(都在"开启纯享"上),
+#     不能用勾位置判断当前状态, 也无需判断
+#   - 点开启后补点一次防吞点击(幂等所以安全)
+#
+# 收尾: 叉号(模板 chun_btn_close_x)关面板 → 验证已关闭,
+#       关不掉不硬终止(后续子脚本开头会自行确认主界面)
+# ============================================================
+name: 开启纯享模式
+description: 日常启动前置:确认主界面后开纯享模式(幂等,已开启再点无副作用)
+
+settings:
+  default_timeout: 10
+  default_retry: 2
+
+steps:
+  - name: 确认主界面
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 3
+    # 上次运行若有残留浮层导致误判, 后面清浮层步骤会兜底
+    on_fail: continue
+
+  # ---- 清残留浮层(上次运行中断可能留下面板) ----
+  - name: 关闭残留纯享面板(若有)
+    wait: {template: chun_btn_close_x}
+    timeout: 3
+    retry: 0
+    action: {type: click_center}
+    on_fail: continue
+
+  - name: 关闭残留功能面板(若有)
+    wait: {template: menu_panel_back}
+    timeout: 3
+    retry: 0
+    action: {type: click_center}
+    on_fail: continue
+
+  - name: 等回主界面
+    wait: {ui: 主界面}
+    timeout: 10
+    retry: 1
+    on_fail: continue
+
+  # ---- 开纯享 ----
+  - name: 打开右下角菜单
+    wait: {template: main_btn_menu}
+    action: {type: click_center}
+    on_fail: stop
+
+  - name: 点击"纯"按钮
+    wait: {template: menu_btn_chun}
+    timeout: 15
+    action: {type: click_center}
+    on_fail: stop
+
+  - name: 等待纯享面板出现
+    wait: {template: chun_btn_open}
+    timeout: 15
+    on_fail: stop
+
+  - name: 点击"开启纯享"
+    action: {type: click, at: [142, 565]}
+
+  # 2026-09-11: 点击偶发被游戏吞掉(领奖段多次证实), 补点一次;
+  # 已选中状态下重复点击无副作用(单选按钮幂等), 多点无害
+  - name: 补点一次防吞点击
+    sleep: 1
+
+  - name: 补点"开启纯享"
+    action: {type: click, at: [142, 565]}
+
+  # ---- 收尾关面板 ----
+  - name: 点击右上角叉号关闭
+    wait: {template: chun_btn_close_x}
+    timeout: 10
+    action: {type: click_center}
+    on_fail: continue
+
+  - name: 验证面板已关闭
+    wait: {not: {template: chun_btn_close_x}}
+    timeout: 10
+    on_fail: continue

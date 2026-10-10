@@ -1,0 +1,27 @@
+name: 示例任务-登录大话西游
+description: |
+  端到端闭环演示：启动游戏 → 等待登录界面出现"登录"按钮(模板识别)
+  → 点击按钮 → 等待按钮消失(确认已进入游戏)。
+settings:
+  default_timeout: 30
+  default_retry: 3
+steps:
+  - name: 启动游戏
+    action:
+      type: start_app
+      package: com.netease.xyfz_02
+    on_fail: stop
+
+  - name: 等待登录按钮出现
+    wait:
+      template: login_btn
+    timeout: 60
+    action:
+      type: click_center
+    on_fail: stop
+
+  - name: 等待进入主界面
+    wait:
+      template: main_ui_menu_role
+    timeout: 90
+    on_fail: stop

@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+# on_success 条件跳转冒烟测试: 当前画面应有"达成条件后继续主线"文字
+# 预期: 检测步命中 → 条件成立跳转 → 直达 结束步, 跳过 不该走到这
+name: on_success冒烟测试
+settings:
+  default_timeout: 5
+  default_retry: 0
+
+steps:
+  - name: 检测主线文字
+    wait: {ocr: 达成条件后继续主线}
+    timeout: 8
+    retry: 0
+    on_success: {goto: 结束步}
+
+  - name: 不该走到这
+    sleep: 1
+
+  - name: 结束步
+    sleep: 1
