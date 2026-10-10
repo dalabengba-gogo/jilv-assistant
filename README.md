@@ -38,20 +38,41 @@ git版本为存档使用，不一定为最新版。
 └─ requirements.txt      依赖清单（仅供复现环境，运行时实际用 vendor/runtime）
 ```
 
+## 下载与使用方式
+
+本仓库只存**源码**（337MB 运行时和打包产物已用 `.gitignore` 排除，不进 git 历史）。按你的角色选一种：
+
+### 普通用户（想开箱即用）
+1. 去仓库 **Releases** 页下载 `鸡驴助手_v2.0.4.zip`（已含 Python 运行时，解压即跑）
+2. 解压到任意目录，双击 **`启动助手.bat`** 启动
+- 前提环境：本机已装 **MuMu 12** 模拟器，游戏包名 `com.netease.xyfz_02`，ADB 端口 `16384`
+
+### 开发者（想改代码 / 自己跑源码）
+1. `git clone` 本仓库，或 GitHub 页面 **Code → Download ZIP**
+2. 恢复运行时（二选一）：
+   - 把绿色版里的 `runtime\` 整个拷到 `vendor\runtime\`
+   - 或 `pip install -r requirements.txt`（需 Python 3.13，onnxruntime/PySide6 等约 300MB）
+3. 双击 **`运行开发版.bat`** 从源码运行
+
+### 自己重新打包绿色版
+双击 **`build.bat`**（或命令行 `build.bat --zip` 顺带压包），产物在 `dist\鸡驴助手_v2.0.4\`。
+
+> 注意：绿色版（含 runtime）约 340MB，**只通过 Releases 分发，不要提交进 git 仓库**（否则每个 clone 都要下载、且历史永久膨胀）。
+
 ## 日常怎么用
 
 | 想做什么 | 怎么做 |
 |---|---|
 | 从源码运行 | 双击 `运行开发版.bat` |
 | 看报错（GUI 起不来时） | 双击 `运行开发版(调试).bat` |
-| 打包绿色版 | 双击 `build.bat` → `dist\鸡驴助手_v2.0.0\` |
+| 打包绿色版 | 双击 `build.bat` → `dist\鸡驴助手_v2.0.4\` |
 | 打包并压 zip | 命令行 `build.bat --zip` |
 | 脚本/注册表自检 | `vendor\runtime\python.exe app\xyfz_auto\scripts\check_refs.py` |
 
 ## 打包产物的结构（与历史绿色版完全一致）
 
 ```
-鸡驴助手_v2.0.0/
+鸡驴助手_v2.0.4/
 ├─ app/xyfz_auto/
 ├─ runtime/
 ├─ 启动助手.bat / 启动助手(调试).bat / 清理残留进程.bat
