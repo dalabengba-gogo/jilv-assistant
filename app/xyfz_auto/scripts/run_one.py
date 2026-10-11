@@ -21,6 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from common import _harden_console                   # noqa: E402
 from common import load_config                       # noqa: E402
 from common import acquire_device_lock, release_device_lock  # noqa: E402
 from common import png_bytes_to_bgr                  # noqa: E402
@@ -35,6 +36,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 def _make_logger(port: int) -> logging.Logger:
     """控制台 + logs/run_<port>.log 双写(独立 logger, 不与 GUI 进程共享)"""
+    _harden_console()          # GBK 控制台下防止 ✔/▶ 触发 UnicodeEncodeError
     logger = logging.getLogger(f"xyfz_{port}")
     if logger.handlers:
         return logger
