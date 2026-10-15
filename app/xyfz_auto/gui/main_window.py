@@ -41,6 +41,9 @@ from live import LIVE_ROOT, LiveReader
 from recognition import OcrEngine, TemplateMatcher
 
 from gui.button_library import ButtonLibraryDialog
+from gui.disclaimer import (DISCLAIMER_VERSION, DisclaimerDialog,
+                            load_disclaimer_settings, save_disclaimer_settings,
+                            should_show_disclaimer)
 from gui.live_panel import AccountScreenPage
 from gui.live_store import Channel, ChannelStore, StepRec
 from gui.multi_panel import MultiPanel
@@ -103,6 +106,7 @@ class MainWindow(QMainWindow):
         self._scan_tick = 0                             # 通道目录扫描降频用
 
         self._build_ui()
+        self._build_menubar()          # 「帮助」菜单: 可随时重看免责声明
         self._rebuild_target_combo()   # 全局账号下拉(本机 + 多开账号)
         self._connect_device()
         self._restore_timer()
@@ -136,6 +140,46 @@ class MainWindow(QMainWindow):
         self._stop_tick = QTimer(self)
         self._stop_tick.timeout.connect(self._tick_stop)
         self._stop_tick.start(200)
+
+        # 2026-10-15: 启动免责声明。延后到主窗口已经显示出来再弹 —— 否则窗口还没
+        # 出来先弹个框, 看起来像程序卡住。是否要弹由 gui_settings.json 决定。
+        QTimer.singleShot(300, self._maybe_show_disclaimer)
+
+    # ================= 免责声明 =================
+    def _build_menubar(self):
+        """菜单栏「帮助」: 万一用户勾了"不再显示", 这里还能随时翻出来看"""
+        try:
+            mb = self.menuBar()
+            m = mb.addMenu("帮助(&H)")
+            act = m.addAction("免责声明 / 主播推荐…")
+            act.triggered.connect(self._show_disclaimer_manual)
+        except Exception:
+            pass
+
+    def _maybe_show_disclaimer(self):
+        """启动时调用: 已勾选"不再显示"且声明版本未变 → 直接跳过"""
+        try:
+            if not should_show_disclaimer():
+                return
+            self._show_disclaimer()
+        except Exception:
+            pass
+
+    def _show_disclaimer_manual(self):
+        """菜单/托盘手动打开(不看"不再显示", 总能打开)"""
+        try:
+            self._show_disclaimer()
+        except Exception:
+            pass
+
+    def _show_disclaimer(self):
+        st = load_disclaimer_settings()
+        dlg = DisclaimerDialog(self, dont_show=bool(st.get("dont_show", False)))
+        dlg.exec()
+        # 手动打开时也能取消勾选 → 下次启动恢复弹窗
+        st["dont_show"] = dlg.dont_show_checked()
+        st["version"] = DISCLAIMER_VERSION
+        save_disclaimer_settings(st)
 
     # ================= 账号命名 =================
     def _acc_name(self, port: int) -> str:
@@ -206,6 +250,10 @@ class MainWindow(QMainWindow):
         menu = QMenu()
         act_show = menu.addAction("显示主窗口")
         act_show.triggered.connect(self._tray_show)
+        menu.addSeparator()
+        # 2026-10-15: 免得勾了"不再显示"就再也找不着声明了
+        act_disc = menu.addAction("免责声明 / 主播推荐…")
+        act_disc.triggered.connect(self._show_disclaimer_manual)
         menu.addSeparator()
         act_quit = menu.addAction("退出")
         act_quit.triggered.connect(self._quit_app)   # 走 closeEvent 回收资源

@@ -7,6 +7,8 @@ dist/
 _dist_obsolete/
 
 # ---- 运行期产物 ----
+# GUI 本地设置(免责声明"不再显示"等), 每人不同, 不入库
+gui_settings.json
 __pycache__/
 *.py[cod]
 logs/

@@ -21,7 +21,7 @@ APP_NAME = "鸡驴助手"
 #   修(第三位)只管同一批次内的小修补, 不设上限也不进位。
 # 改版本号时同步这三处: common.py 本行 / __init__.py 的 __version__ / 使用说明.txt 版本历史
 # (历史上这三处长期不一致: common.py 已是 1.10.3 时 __init__.py 还停在 1.6.2, 以 common.py 为准)
-APP_VERSION = "2.0.5"        # v2.0.0 —— ① 每日必领段⑤ 盈福大厅签到: 实机采集 5 个模板 + 注册
+APP_VERSION = "2.0.6"        # v2.0.0 —— ① 每日必领段⑤ 盈福大厅签到: 实机采集 5 个模板 + 注册
                              #   2 界面/3 按钮, 修掉「关奖励弹窗」白等一次超时、返回次数多写一次;
                              # ② engine/runner 补写法/注册表错误兜底(ValueError 等), 单个步骤
                              #   写错不再炸掉整条任务, on_fail 终于生效;
@@ -57,6 +57,11 @@ APP_VERSION = "2.0.5"        # v2.0.0 —— ① 每日必领段⑤ 盈福大厅
                              # ② 修 绿色版 GBK 控制台下日志刷屏 UnicodeEncodeError(✔/▶/⚠ 无法编码,
                              #   把 run_<port>.log 灌满 traceback): common._harden_console() 把
                              #   stdout/stderr 的 error 策略设为 replace, 符号降级为 ? 不再中断
+                             # v2.0.6 —— 新增 gui/disclaimer.py: 启动后弹一次【免责声明】(内容与使用说明
+                             #   文末一致, 结尾推荐主播「大话西游归来·缘起服 —— 达拉崩吧」), 可勾选
+                             #   「不再显示此提示」永久跳过 → 写入 gui_settings.json(不入库)。
+                             #   声明正文版本 DISCLAIMER_VERSION 变更时会重新弹一次;
+                             #   菜单栏「帮助」与托盘菜单随时可重开, 也能取消勾选恢复启动弹窗
 APP_TITLE = f"{APP_NAME} v{APP_VERSION}"
 
 
