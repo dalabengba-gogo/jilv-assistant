@@ -43,9 +43,12 @@ git版本为存档使用，不一定为最新版。
 本仓库只存**源码**（337MB 运行时和打包产物已用 `.gitignore` 排除，不进 git 历史）。按你的角色选一种：
 
 ### 普通用户（想开箱即用）
-1. 去仓库 **Releases** 页下载 `鸡驴助手_v2.0.6.zip`（已含 Python 运行时，解压即跑）
+1. 去 [Releases](https://github.com/rczhaoliang-gif/jilv-assistant/releases) 页
+   下载 **`JilvAssistant_v2.0.6.zip`**（129MB，已含 Python 运行时，解压即跑）
+   - 直链：https://github.com/rczhaoliang-gif/jilv-assistant/releases/download/v2.0.6/JilvAssistant_v2.0.6.zip
 2. 解压到任意目录，双击 **`启动助手.bat`** 启动
 - 前提环境：本机已装 **MuMu 12** 模拟器，游戏包名 `com.netease.xyfz_02`，ADB 端口 `16384`
+- 注：GitHub 的 Release 附件名不支持中文，故文件名用英文；解压后目录名仍是中文「鸡驴助手_v2.0.6」
 
 ### 开发者（想改代码 / 自己跑源码）
 1. `git clone` 本仓库，或 GitHub 页面 **Code → Download ZIP**
