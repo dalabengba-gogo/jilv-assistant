@@ -1430,6 +1430,46 @@ class Engine:
             f"[{rec['name']}] ({reason}) — on_fail={rec['policy']}"
             f"{'; 已标记 required, 任务将判失败' if step.required else ''}")
 
+    # 2026-10-22: 全局"卡住自愈" —— 任意脚本的任意步骤失败时, 若误开了聊天界面
+    # (点世界聊天气泡 / 弹窗点击落在聊天入口), 自动点左下角返回箭头关掉, 让后续
+    # 恢复块 / 下一步有干净画面。原先只在 daily_team_oneloop 局部处理(2026-09-15 事故),
+    # 现下沉到引擎层覆盖全部脚本。判据与坐标沿用已验证方案:
+    #   OCR「说点什么」(聊天输入框占位文字, 只在此处出现) → tap[25,922](聊天返回箭头)。
+    # 触发频率用 30 秒冷却兜住: 一次失败后短时间内不再重复 OCR / 点击, 避免恢复块
+    # 里频繁失败带来的开销; 且只在**确实检测到聊天**时才点, 不会误伤正常画面。
+    def _stuck_escape_chat(self):
+        cfg = self._cfg_cache
+        if cfg is None:
+            try:
+                from common import load_config
+                cfg = load_config()
+            except Exception:
+                cfg = {}
+        eng = cfg.get("engine", {}) if isinstance(cfg, dict) else {}
+        if not eng.get("chat_escape_on_fail", True):
+            return
+        now = _now()
+        last = getattr(self, "_last_chat_escape", 0.0)
+        if now - last < 30.0:
+            return
+        try:
+            screen = self._grab(ttl=2.0)
+            if screen is None:
+                return
+            boxes = self._ocr_boxes(screen) or []
+            if any("说点什么" in (b.get("text") or "") for b in boxes):
+                self._emit_log(
+                    "warning",
+                    "✅ 卡住时检测到聊天界面(误开), 自动点左下角返回箭头退出")
+                self._invalidate_frame()
+                self.device.tap(25, 922)
+                self._last_chat_escape = now
+                self._sleep(2)
+                self._invalidate_frame()
+        except Exception:
+            # 逃逸本身绝不能影响正常失败记账 / 兜底策略
+            pass
+
     def _handle_fail(self, step: Step, idx: int, task: Task,
                      reason: str = "超时或识别失败", kind: str = "fail") -> bool:
         """on_fail 策略，返回 True=可继续执行后续，False=终止任务
@@ -1446,6 +1486,9 @@ class Engine:
         不是写错脚本、不是点击失败)。这类只记"条件未命中", 不计入结束统计,
         详见 _record_failure 的说明。
         """
+        # 2026-10-22: 全局"卡住自愈" —— 步骤失败时先尝试退出误开的聊天界面,
+        # 让后续恢复块/下一步有干净画面。详见 _stuck_escape_chat。
+        self._stuck_escape_chat()
         policy = step.on_fail
         if policy == "retry":
             self._record_failure(step, idx, f"重试耗尽({reason})", kind)
