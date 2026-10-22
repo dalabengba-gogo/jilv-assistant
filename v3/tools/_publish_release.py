@@ -22,7 +22,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-REPO = "rczhaoliang-gif/jilv-assistant"
+REPO = "dalabengba-gogo/jilv-assistant"
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)                       # v3/
 DIST = os.path.join(ROOT, "dist")

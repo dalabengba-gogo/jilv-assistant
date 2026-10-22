@@ -7,10 +7,10 @@
 
 ## 下载绿色版（普通用户，推荐）
 
-去 [Releases](https://github.com/rczhaoliang-gif/jilv-assistant/releases) 页下载
+去 [Releases](https://github.com/dalabengba-gogo/jilv-assistant/releases) 页下载
 **`JilvAssistant_v6.0.0.zip`** —— 112.5MB，已内置 Python 运行时，**解压即跑，无需安装任何东西**。
 
-- 直链：https://github.com/rczhaoliang-gif/jilv-assistant/releases/download/v6.0.0/JilvAssistant_v6.0.0.zip
+- 直链：https://github.com/dalabengba-gogo/jilv-assistant/releases/download/v6.0.0/JilvAssistant_v6.0.0.zip
 - 官方校验值：同页的 `JilvAssistant_v6.0.0.md5.txt`；解压后包内还自带「验证完整性.bat」，双击即可核对
 - GitHub 的 Release 附件名不支持中文，故文件名用英文；解压后目录名仍是「鸡驴助手_v6.0.0」
 
