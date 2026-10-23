@@ -27,6 +27,36 @@ settings:
   default_retry: 2
 
 steps:
+  # ============================================================
+  # 2026-10-23 v6.1.2: 奖励结算弹窗守卫 —— 必须放在最前面
+  # ------------------------------------------------------------
+  # 事故(10-23 账号5 单独跑「五环+师门」连挂两轮): 日常一条龙的奖励结算串
+  # 「恭喜获得」还挂着时, 本段是任务的**第一个**执行单元, 于是:
+  #   ①「确认主界面」判失败(on_fail=continue, 不致命);
+  #   ② 但「打开右下角菜单」的 main_btn_menu 模板**透过半透明遮罩照样匹配成功**
+  #      → 点击落在弹窗上, 菜单根本没开;
+  #   ③ 随后「点击"纯"按钮」等不到 menu_btn_chun → on_fail=stop → **整条任务终止**,
+  #      五环/师门自己的守卫压根没机会跑。
+  # 修法: 进门先只认「奖励结算弹窗」——有就点底栏任务栏 [270,905] 翻一页(一串奖励页
+  # 依次弹出, 翻完自动回主界面); 没有就立刻放行(goto 完成), 不点任何东西, 避免在
+  # 无关界面上乱点。不用系统返回键 key:4(会弹「确认要退出?」), 也不用左下角返回箭头
+  # [27,913](可能跳到离线挂机界面)。
+  - name: 纯享-奖励弹窗守卫-循环
+    loop: 8
+    steps:
+      - name: 纯享-守卫-无奖励弹窗则通过
+        wait: {ui: 奖励结算弹窗}
+        timeout: 2
+        retry: 0
+        on_fail: {goto: 纯享-守卫-完成}
+      - name: 纯享-守卫-点任务栏翻过奖励页
+        click: [270, 905]
+      - name: 纯享-守卫-停顿2秒
+        sleep: 2
+
+  - name: 纯享-守卫-完成
+    sleep: 1
+
   - name: 确认主界面
     wait: {ui: 主界面}
     timeout: 10
@@ -57,22 +87,27 @@ steps:
     retry: 1
     on_fail: continue
 
-  # ---- 开纯享 ----
+  # 2026-10-23 v6.1.2: 这里**只能用单个模板条件** —— all_of/not 这类组合条件在引擎里
+  # 只返回布尔哨兵(object()), 没有匹配坐标, 配 click_center 动作会报
+  # "'object' object is not subscriptable"(实测踩过, 步骤整步被判错)。
+  # 防"透过奖励弹窗误匹配"改由本段最前面的奖励弹窗守卫负责: 弹窗先被翻完,
+  # 这里才可能执行; 万一弹窗中途又冒出来, 后面失败也不再终止任务(on_fail=continue)。
   - name: 打开右下角菜单
     wait: {template: main_btn_menu}
     action: {type: click_center}
-    on_fail: stop
+    on_fail: continue
 
   - name: 点击"纯"按钮
     wait: {template: menu_btn_chun}
     timeout: 15
     action: {type: click_center}
-    on_fail: stop
+    on_fail: continue
 
   - name: 等待纯享面板出现
     wait: {template: chun_btn_open}
     timeout: 15
-    on_fail: stop
+    # 面板没出来就别盲点「开启纯享」(那是对固定坐标的点击), 直接去收尾
+    on_fail: {goto: 纯享-收尾}
 
   - name: 点击"开启纯享"
     action: {type: click, at: [142, 565]}
@@ -95,4 +130,17 @@ steps:
   - name: 验证面板已关闭
     wait: {not: {template: chun_btn_close_x}}
     timeout: 10
+    on_fail: continue
+
+  # 2026-10-23 v6.1.2: 纯享段失败/跳过的统一收尾 —— 顺手退掉可能残留的功能面板,
+  # 让后面的五环/师门从干净画面开始(它们自己进门还有奖励弹窗守卫兜底)。
+  - name: 纯享-收尾
+    sleep: 1
+
+  - name: 纯享-收尾-退掉残留功能面板(若有)
+    optional: true
+    wait: {template: menu_panel_back}
+    timeout: 2
+    retry: 0
+    action: {type: click_center}
     on_fail: continue
