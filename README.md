@@ -3,16 +3,16 @@
 大话西游手游日常任务自动化工具：ADB 截图 + 图像模板匹配驱动（ALAS 风格），
 支持多开、定时、任务状态灯与运行历史。
 
-**当前版本：v6.0.0**（2026-10-20）
+**当前版本：v6.1.2**（2026-10-23）
 
 ## 下载绿色版（普通用户，推荐）
 
 去 [Releases](https://github.com/dalabengba-gogo/jilv-assistant/releases) 页下载
-**`JilvAssistant_v6.0.0.zip`** —— 112.5MB，已内置 Python 运行时，**解压即跑，无需安装任何东西**。
+**`JilvAssistant_v6.1.2.zip`** —— 112.5MB，已内置 Python 运行时，**解压即跑，无需安装任何东西**。
 
-- 直链：https://github.com/dalabengba-gogo/jilv-assistant/releases/download/v6.0.0/JilvAssistant_v6.0.0.zip
-- 官方校验值：同页的 `JilvAssistant_v6.0.0.md5.txt`；解压后包内还自带「验证完整性.bat」，双击即可核对
-- GitHub 的 Release 附件名不支持中文，故文件名用英文；解压后目录名仍是「鸡驴助手_v6.0.0」
+- 直链：https://github.com/dalabengba-gogo/jilv-assistant/releases/download/v6.1.2/JilvAssistant_v6.1.2.zip
+- 官方校验值：同页的 `JilvAssistant_v6.1.2.md5.txt`；解压后包内还自带「验证完整性.bat」，双击即可核对
+- GitHub 的 Release 附件名不支持中文，故文件名用英文；解压后目录名仍是「鸡驴助手_v6.1.2」
 
 ## 目录
 
