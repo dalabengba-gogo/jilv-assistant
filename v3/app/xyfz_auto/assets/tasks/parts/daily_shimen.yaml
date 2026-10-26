@@ -291,9 +291,70 @@ steps:
   # (上午师门 09:05 弹窗后链条自己跑完 5/5 就是证据)。
   # 若立刻退出, 后续段的开面板/点击会打断链条(11:47 五环只跑1环就死的教训)。
   # 等「主界面+无回合」连续两轮(约4分钟安静)才结束本段
+  #
+  # 2026-10-26 v6.1.6 加聊天兜底(与五环链条收尾同一套): 原来是「60s 裸等 ×3 次」,
+  # 若结算连点后误开了聊天面板(左下「说点什么」输入框盖住底栏, 「主界面」判定不成立),
+  # 就会白等 180 秒。现在 20 秒等不到 → OCR 判一次是不是聊天 → 是就点 [25,922] 清掉。
   - name: 师门-链条收尾-等回主界面
     wait: {ui: 主界面}
-    timeout: 60
+    timeout: 20
+    retry: 0
+    on_success: {goto: 师门-链条收尾-停顿15秒}
+    on_fail: continue
+
+  - name: 师门-链条收尾-查是否误开聊天
+    wait: {ocr: 说点什么}
+    timeout: 3
+    retry: 0
+    on_fail: {goto: 师门-链条收尾-等回主界面-兜底}
+
+  # 引擎自身的「聊天逃逸」可能已经关掉了, 先确认再决定要不要点 [25,922]
+  # (在主界面上点它会打开「频道」面板)
+  - name: 师门-链条收尾-聊天已关则直接结束
+    wait: {ui: 主界面}
+    timeout: 5
+    retry: 0
+    on_success: {goto: 师门-链条收尾-停顿15秒}
+    on_fail: continue
+
+  - name: 师门-链条收尾-点返回退出聊天
+    click: [25, 922]
+    on_fail: continue
+
+  - name: 师门-链条收尾-退出聊天停顿
+    sleep: 2
+
+  - name: 师门-链条收尾-等回主界面-2
+    wait: {ui: 主界面}
+    timeout: 25
+    retry: 0
+    on_success: {goto: 师门-链条收尾-停顿15秒}
+    on_fail: continue
+
+  - name: 师门-链条收尾-查是否误开聊天-2
+    wait: {ocr: 说点什么}
+    timeout: 3
+    retry: 0
+    on_fail: {goto: 师门-链条收尾-等回主界面-兜底}
+
+  - name: 师门-链条收尾-聊天已关则直接结束-2
+    wait: {ui: 主界面}
+    timeout: 5
+    retry: 0
+    on_success: {goto: 师门-链条收尾-停顿15秒}
+    on_fail: continue
+
+  - name: 师门-链条收尾-点返回退出聊天-2
+    click: [25, 922]
+    on_fail: continue
+
+  - name: 师门-链条收尾-退出聊天停顿-2
+    sleep: 2
+
+  - name: 师门-链条收尾-等回主界面-兜底
+    wait: {ui: 主界面}
+    timeout: 20
+    retry: 0
     on_fail: continue
 
   # 2026-09-11 15:20 用户要求: 收尾确认由约4分钟压缩到约1分钟
